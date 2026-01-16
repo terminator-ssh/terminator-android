@@ -29,6 +29,9 @@ class HostsViewModel(
     private val syncRepository: SyncRepository
 ) : ViewModel() {
 
+    private val _hasSyncError = MutableStateFlow(false)
+    val hasSyncError = _hasSyncError.asStateFlow()
+
     private val _events = Channel<HostsEvent>()
     val events = _events.receiveAsFlow()
 
@@ -73,6 +76,10 @@ class HostsViewModel(
 
         _isSyncing.value = true
 
+        if (isManual) {
+            _hasSyncError.value = false
+        }
+
         val syncJob = viewModelScope.async {
             syncRepository.sync()
         }
@@ -91,11 +98,13 @@ class HostsViewModel(
                 //if (isManual) {
                 //    _events.send(HostsEvent.ShowSnackbar("Sync Complete"))
                 //}
+                _hasSyncError.value = false
             }
             .onFailure { error ->
                 if (isManual) {
                     _events.send(HostsEvent.ShowSnackbar("Sync Failed: ${error.message}"))
                 }
+                _hasSyncError.value = true
             }
 
         _isSyncing.value = false

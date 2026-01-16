@@ -63,6 +63,15 @@ fun HostsScreen(
 
     val isSyncing by viewModel.isSyncing.collectAsState()
 
+    val hasSyncError by viewModel.hasSyncError.collectAsState()
+
+    val iconTint = when {
+        // TODO: something better than mimicking the default disabled color?
+        isSyncing -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        hasSyncError -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     val infiniteTransition = rememberInfiniteTransition(label = "spin")
@@ -103,7 +112,8 @@ fun HostsScreen(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh",
-                            modifier = Modifier.rotate(if (isSyncing) angle else 0f)
+                            modifier = Modifier.rotate(if (isSyncing) angle else 0f),
+                            tint = iconTint
                         )
                     }
                 }
