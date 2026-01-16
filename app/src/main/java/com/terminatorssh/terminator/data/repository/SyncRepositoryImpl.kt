@@ -12,6 +12,7 @@ import com.terminatorssh.terminator.domain.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 
 class SyncRepositoryImpl(
     private val authRepository: AuthRepository,
@@ -20,8 +21,14 @@ class SyncRepositoryImpl(
     private val clientFactory: RetrofitClientFactory
 ) : SyncRepository {
 
+    private val _isSyncing = AtomicBoolean(false)
+
     override suspend fun sync(): Result<Unit> = withContext(Dispatchers.IO) {
+        if (_isSyncing.get()) return@withContext Result.success(Unit)
+
         try {
+            _isSyncing.set(true)
+
             val session = authRepository.getCurrentSession()
                 ?: return@withContext Result.failure(
                     IllegalStateException("Not logged in"))
@@ -75,10 +82,13 @@ class SyncRepositoryImpl(
 
             updateUserLastSyncTime(user, response.syncTime)
 
+            _isSyncing.set(false)
             Result.success(Unit)
 
         } catch (e: Exception) {
             e.printStackTrace()
+
+            _isSyncing.set(false)
             Result.failure(e)
         }
     }
