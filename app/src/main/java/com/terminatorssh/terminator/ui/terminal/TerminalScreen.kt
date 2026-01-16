@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import jackpal.androidterm.emulatorview.EmulatorView
 import org.koin.androidx.compose.koinViewModel
 
@@ -50,12 +52,16 @@ fun TerminalScreen(
             view.requestFocus()
             val inputMethodManager = context.getSystemService(
                 Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//            if(inputMethodManager.isActive(view)) {
-//                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-//            } else {
-//                view.requestFocus()
-//                inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-//            }
+
+            //val insets = ViewCompat.getRootWindowInsets(view)
+            //val isKeyboardVisible = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            //if(isKeyboardVisible) {
+            //    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+            //} else {
+            //    view.requestFocus() // important line
+            //    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+            //}
+
             inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
         }
     }
