@@ -20,10 +20,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-sealed class HostsEvent {
-    data class ShowSnackbar(val message: String) : HostsEvent()
-}
-
 class HostsViewModel(
     private val hostRepository: HostRepository,
     private val syncRepository: SyncRepository
