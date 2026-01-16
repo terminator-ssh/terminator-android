@@ -8,19 +8,29 @@ import com.terminatorssh.terminator.domain.repository.SyncRepository
 import com.terminatorssh.terminator.ui.common.AnimationConstants
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.time.Duration
+
+sealed class HostsEvent {
+    data class ShowSnackbar(val message: String) : HostsEvent()
+}
 
 class HostsViewModel(
     private val hostRepository: HostRepository,
     private val syncRepository: SyncRepository
 ) : ViewModel() {
+
+    private val _events = Channel<HostsEvent>()
+    val events = _events.receiveAsFlow()
 
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing = _isSyncing.asStateFlow()
@@ -32,7 +42,7 @@ class HostsViewModel(
     private fun startAutoSync() {
         viewModelScope.launch {
             while (true) {
-                performSyncWithAnimation()
+                performSyncWithAnimation(isManual = false)
 
                 delay(SyncConstants.AUTO_SYNC_DELAY)
             }
@@ -54,11 +64,11 @@ class HostsViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            performSyncWithAnimation()
+            performSyncWithAnimation(isManual = true)
         }
     }
 
-    suspend fun performSyncWithAnimation() {
+    suspend fun performSyncWithAnimation(isManual: Boolean) {
         if (_isSyncing.value) return
 
         _isSyncing.value = true
@@ -73,7 +83,20 @@ class HostsViewModel(
 
         val results = awaitAll(syncJob, animationJob)
 
-        //val syncResult = results[0] as Result<Unit>
+        val syncResult = results[0] as Result<Unit>
+
+        syncResult
+            .onSuccess {
+                // this is kinda annoying
+                //if (isManual) {
+                //    _events.send(HostsEvent.ShowSnackbar("Sync Complete"))
+                //}
+            }
+            .onFailure { error ->
+                if (isManual) {
+                    _events.send(HostsEvent.ShowSnackbar("Sync Failed: ${error.message}"))
+                }
+            }
 
         _isSyncing.value = false
     }
