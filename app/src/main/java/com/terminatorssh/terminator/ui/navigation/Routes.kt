@@ -8,6 +8,5 @@ object LoginRoute
 @Serializable
 object HostsRoute
 
-// TODO add terminal
-//@Serializable
-//data class TerminalRoute(val hostId: String)
+@Serializable
+data class TerminalRoute(val hostId: String)

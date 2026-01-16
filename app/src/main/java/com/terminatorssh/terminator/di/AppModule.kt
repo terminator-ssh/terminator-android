@@ -1,7 +1,9 @@
 package com.terminatorssh.terminator.di
 
 import com.terminatorssh.terminator.data.repository.AuthRepositoryImpl
+import com.terminatorssh.terminator.data.repository.HostRepositoryImpl
 import com.terminatorssh.terminator.domain.repository.AuthRepository
+import com.terminatorssh.terminator.domain.repository.HostRepository
 import com.terminatorssh.terminator.domain.service.ArgonCryptoService
 import com.terminatorssh.terminator.domain.service.CryptoService
 import org.koin.dsl.module
@@ -20,6 +22,15 @@ val appModule = module {
             userDao = get(),
             clientFactory = get(),
             cryptoService = get()
+        )
+    }
+
+    single<HostRepository> {
+        HostRepositoryImpl(
+            blobDao = get(),
+            authRepository = get(),
+            cryptoService = get(),
+            gson = get()
         )
     }
 }
