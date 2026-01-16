@@ -49,7 +49,7 @@ fun HostsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Your Hosts") },
+                title = { Text("Hosts") },
                 actions = {
                     IconButton(onClick = { viewModel.loadHosts() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
