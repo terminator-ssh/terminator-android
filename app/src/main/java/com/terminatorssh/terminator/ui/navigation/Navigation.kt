@@ -41,6 +41,11 @@ fun Navigation() {
                 },
                 onHostAddClick = {
                     navController.navigate(HostFormRoute(null))
+                },
+                onLogout = {
+                    navController.navigate(WelcomeRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

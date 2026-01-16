@@ -22,15 +22,25 @@ import com.terminatorssh.terminator.domain.model.Host
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -41,6 +51,7 @@ fun HostsScreen(
     onHostClick: (Host) -> Unit,
     onHostAddClick: () -> Unit,
     onHostEditClick: (Host) -> Unit,
+    onLogout: () -> Unit,
     viewModel: HostsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -55,6 +66,10 @@ fun HostsScreen(
         hasSyncError -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.onSurface
     }
+
+    var showMenu by remember { mutableStateOf(false) }
+    var showConnectDialog by remember { mutableStateOf(false) }
+    var showWipeDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -76,6 +91,9 @@ fun HostsScreen(
                         message = event.message,
                         withDismissAction = true
                     )
+                }
+                is HostsEvent.NavigateToWelcome -> {
+                    onLogout()
                 }
             }
         }
@@ -99,6 +117,29 @@ fun HostsScreen(
                             modifier = Modifier.rotate(if (isSyncing) angle else 0f),
                             tint = iconTint
                         )
+                    }
+
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, "Options")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Connect to Cloud") },
+                                onClick = { showMenu = false; showConnectDialog = true },
+                                leadingIcon = { Icon(Icons.Default.CloudUpload, null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Wipe Data") },
+                                onClick = { showMenu = false; showWipeDialog = true },
+                                leadingIcon = {
+                                    Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error)
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -129,6 +170,36 @@ fun HostsScreen(
                     }
                 }
             }
+        }
+
+        if (showWipeDialog) {
+            AlertDialog(
+                onDismissRequest = { showWipeDialog = false },
+                title = { Text("Nuke Everything?") },
+                text = { Text("This will permanently delete all local data. This cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.wipeData()
+                            showWipeDialog = false
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) { Text("Wipe") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showWipeDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
+
+        if (showConnectDialog) {
+            ConnectServerDialog(
+                onDismiss = { showConnectDialog = false },
+                onConnect = { url, pass ->
+                    viewModel.connectToCloud(url, pass)
+                    showConnectDialog = false
+                }
+            )
         }
     }
 }

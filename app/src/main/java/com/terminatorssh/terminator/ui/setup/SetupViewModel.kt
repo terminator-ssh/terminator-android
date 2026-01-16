@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.terminatorssh.terminator.data.usecase.CreateLocalUserUseCase
 import com.terminatorssh.terminator.data.usecase.LoginUseCase
 import com.terminatorssh.terminator.data.usecase.RegisterUseCase
+import com.terminatorssh.terminator.data.usecase.SmartConnectUseCase
 import com.terminatorssh.terminator.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class SetupViewModel(
+    private val smartConnectUseCase: SmartConnectUseCase,
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
     private val createLocalUserUseCase: CreateLocalUserUseCase,
@@ -19,7 +21,7 @@ class SetupViewModel(
     private val _state = MutableStateFlow<SetupState>(SetupState.Idle)
     val state: StateFlow<SetupState> = _state.asStateFlow()
 
-    fun login(url: String, username: String, pass: String) {
+    fun connect(url: String, username: String, pass: String) {
         if (url.isBlank() || username.isBlank() || pass.isBlank()) {
             _state.value = SetupState.Error("Please fill all fields")
             return
@@ -28,38 +30,13 @@ class SetupViewModel(
         _state.value = SetupState.Loading
 
         viewModelScope.launch {
-            val loginResult = loginUseCase(url, username, pass)
-
-            loginResult.onFailure { error ->
-                _state.value = SetupState.Error(error.message ?: "Unknown login error")
-            }
-
-            val syncResult = syncRepository.sync()
-
-            syncResult.onSuccess {
-                _state.value = SetupState.Success
-            }.onFailure { error ->
-                _state.value = SetupState.Error("Sync failed: ${error.message}")
-            }
-        }
-    }
-
-    fun register(url: String, username: String, pass: String) {
-        if (url.isBlank() || username.isBlank() || pass.isBlank()) {
-            _state.value = SetupState.Error("Please fill all fields")
-            return
-        }
-
-        _state.value = SetupState.Loading
-
-        viewModelScope.launch {
-            val result = registerUseCase(url, username, pass)
+            val result = smartConnectUseCase(url, username, pass)
 
             result.onSuccess {
-                syncRepository.sync() // verify connection
+                syncRepository.sync()
                 _state.value = SetupState.Success
             }.onFailure { error ->
-                _state.value = SetupState.Error("Registration failed: ${error.message}")
+                _state.value = SetupState.Error("Connection failed: ${error.message}")
             }
         }
     }

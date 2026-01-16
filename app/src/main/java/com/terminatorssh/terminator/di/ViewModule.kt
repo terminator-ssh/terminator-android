@@ -13,9 +13,12 @@ val viewModelModule = module {
         get(),
         get(),
         get(),
+        get(),
         get()) }
 
     viewModel { HostsViewModel(
+        get(),
+        get(),
         get(),
         get()) }
 

@@ -22,15 +22,12 @@ fun LoginScreen(
 
     LoginContent(
         state = state,
-        onLoginClick = { url, user, pass ->
-            viewModel.login(url, user, pass)
+        onConnectClick = { url, user, pass ->
+            viewModel.connect(url, user, pass)
         },
         onCreateLocalClick = { user, pass ->
             viewModel.createLocal(user, pass)
-        },
-        onRegisterClick = { url, user, pass ->
-            viewModel.register(url, user, pass)
-        },
+        }
     )
 }
 
@@ -40,9 +37,8 @@ fun LoginScreenPreview() {
     MaterialTheme {
         LoginContent(
             state = SetupState.Idle,
-            onLoginClick = { _, _, _ -> },
+            onConnectClick = { _, _, _ -> },
             onCreateLocalClick = { _, _ -> },
-            onRegisterClick = { _, _, _ -> }
         )
     }
 }
@@ -53,9 +49,8 @@ fun LoginErrorPreview() {
     MaterialTheme {
         LoginContent(
             state = SetupState.Error("Invalid credentials"),
-            onLoginClick = { _, _, _ -> },
-            onCreateLocalClick = { _, _ -> },
-            onRegisterClick = { _, _, _ -> }
+            onConnectClick = { _, _, _ -> },
+            onCreateLocalClick = { _, _ -> }
         )
     }
 }

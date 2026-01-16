@@ -2,8 +2,10 @@ package com.terminatorssh.terminator.ui.hosts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.terminatorssh.terminator.data.usecase.ConnectToCloudUseCase
 import com.terminatorssh.terminator.domain.common.SyncConstants
 import com.terminatorssh.terminator.domain.repository.HostRepository
+import com.terminatorssh.terminator.domain.repository.SessionRepository
 import com.terminatorssh.terminator.domain.repository.SyncRepository
 import com.terminatorssh.terminator.ui.common.AnimationConstants
 import kotlinx.coroutines.async
@@ -18,11 +20,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.time.Duration
 
 class HostsViewModel(
     private val hostRepository: HostRepository,
-    private val syncRepository: SyncRepository
+    private val syncRepository: SyncRepository,
+    private val sessionRepository: SessionRepository,
+    private val connectToCloudUseCase: ConnectToCloudUseCase
 ) : ViewModel() {
 
     private val _hasSyncError = MutableStateFlow(false)
@@ -104,5 +107,31 @@ class HostsViewModel(
             }
 
         _isSyncing.value = false
+    }
+
+    fun wipeData() {
+        viewModelScope.launch {
+            sessionRepository.logout()
+            _events.send(HostsEvent.NavigateToWelcome)
+        }
+    }
+
+    fun connectToCloud(url: String, pass: String) {
+        viewModelScope.launch {
+            val result = connectToCloudUseCase(url, pass)
+
+            result.onSuccess {
+                _events.send(
+                    HostsEvent.ShowSnackbar(
+                        "Connected! Starting sync."))
+
+                performSyncWithAnimation(isManual = false)
+            }.onFailure {
+                _events.send(
+                    HostsEvent.ShowSnackbar(
+                        "Connection failed: ${it.message}"))
+
+            }
+        }
     }
 }

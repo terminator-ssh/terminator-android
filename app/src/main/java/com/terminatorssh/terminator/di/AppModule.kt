@@ -7,9 +7,11 @@ import com.terminatorssh.terminator.data.remote.service.UserPersistenceService
 import com.terminatorssh.terminator.data.repository.HostRepositoryImpl
 import com.terminatorssh.terminator.data.repository.SessionRepositoryImpl
 import com.terminatorssh.terminator.data.repository.SyncRepositoryImpl
+import com.terminatorssh.terminator.data.usecase.ConnectToCloudUseCase
 import com.terminatorssh.terminator.data.usecase.CreateLocalUserUseCase
 import com.terminatorssh.terminator.data.usecase.LoginUseCase
 import com.terminatorssh.terminator.data.usecase.RegisterUseCase
+import com.terminatorssh.terminator.data.usecase.SmartConnectUseCase
 import com.terminatorssh.terminator.data.usecase.UnlockVaultUseCase
 import com.terminatorssh.terminator.domain.repository.HostRepository
 import com.terminatorssh.terminator.domain.repository.SessionRepository
@@ -89,6 +91,21 @@ val appModule = module {
     }
 
     factory { CreateLocalUserUseCase(
+        get(),
+        get(),
+        get())
+    }
+
+    factory { ConnectToCloudUseCase(
+            get(),
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
+
+    factory { SmartConnectUseCase(
         get(),
         get(),
         get())

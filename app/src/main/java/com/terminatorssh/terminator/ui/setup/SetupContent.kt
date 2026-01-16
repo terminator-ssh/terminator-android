@@ -36,8 +36,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LoginContent(
     state: SetupState,
-    onLoginClick: (String, String, String) -> Unit,
-    onRegisterClick: (String, String, String) -> Unit,
+    onConnectClick: (String, String, String) -> Unit,
     onCreateLocalClick: (String, String) -> Unit
 ) {
     var isLocalMode by remember { mutableStateOf(false) }
@@ -81,7 +80,7 @@ fun LoginContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cloud Restore")
+                    Text("Cloud")
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -151,31 +150,20 @@ fun LoginContent(
                 val buttonText = when {
                     isLocalMode -> "Create Local Vault"
                     isRegisterMode -> "Sign Up"
-                    else -> "Connect & Restore"
+                    else -> "Connect"
                 }
 
                 Button(
                     onClick = {
                         when {
                             isLocalMode -> onCreateLocalClick(username, password)
-                            isRegisterMode -> onRegisterClick(serverUrl, username, password)
-                            else -> onLoginClick(serverUrl, username, password)
+                            isRegisterMode -> onConnectClick(serverUrl, username, password)
+                            else -> onConnectClick(serverUrl, username, password)
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {
                     Text(buttonText)
-                }
-            }
-
-            if (!isLocalMode && state !is SetupState.Loading) {
-                Spacer(modifier = Modifier.height(16.dp))
-                TextButton(onClick = { isRegisterMode = !isRegisterMode }) {
-                    Text(
-                        text = if (isRegisterMode) "Already have an account? Login"
-                        else "Need an account? Register",
-                        color = MaterialTheme.colorScheme.secondary
-                    )
                 }
             }
         }
