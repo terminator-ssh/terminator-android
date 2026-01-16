@@ -14,4 +14,7 @@ interface TerminatorApiService {
     suspend fun sync(
         @Header("Authorization") token: String,
         @Body req: SyncRequest): SyncResponse
+
+    @POST("auth/register")
+    suspend fun register(@Body req: RegisterRequest): RegisterResponse
 }

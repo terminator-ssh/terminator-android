@@ -10,6 +10,8 @@ interface AuthRepository {
 
     suspend fun login(url: String, username: String, password: String): Result<UserSession>
 
+    suspend fun registerAndSync(url: String, username: String, password: String): Result<UserSession>
+
     suspend fun unlockVault(password: String): Result<UserSession>
 
     suspend fun logout()

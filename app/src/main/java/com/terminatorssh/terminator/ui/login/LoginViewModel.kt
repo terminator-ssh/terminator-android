@@ -40,6 +40,26 @@ class LoginViewModel(
         }
     }
 
+    fun register(url: String, username: String, pass: String) {
+        if (url.isBlank() || username.isBlank() || pass.isBlank()) {
+            _state.value = LoginState.Error("Please fill all fields")
+            return
+        }
+
+        _state.value = LoginState.Loading
+
+        viewModelScope.launch {
+            val result = authRepository.registerAndSync(url, username, pass)
+
+            result.onSuccess {
+                syncRepository.sync() // verify connection
+                _state.value = LoginState.Success
+            }.onFailure { error ->
+                _state.value = LoginState.Error("Registration failed: ${error.message}")
+            }
+        }
+    }
+
     fun createLocal(username: String, pass: String) {
         if (username.isBlank() || pass.isBlank()) {
             _state.value = LoginState.Error("Please fill all fields")

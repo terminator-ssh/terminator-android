@@ -112,4 +112,13 @@ class ArgonCryptoService : CryptoService {
         SecureRandom().nextBytes(bytes)
         return bytes
     }
+
+    override fun generateAuthSalt(): ByteArray
+        = generateRandomBytes(CryptoConstants.AUTH_SALT_LENGTH)
+
+    override fun generateKeySalt(): ByteArray
+        = generateRandomBytes(CryptoConstants.KEY_SALT_LENGTH)
+
+    override fun generateMasterKey(): ByteArray
+        = generateRandomBytes(CryptoConstants.MASTER_KEY_LENGTH)
 }

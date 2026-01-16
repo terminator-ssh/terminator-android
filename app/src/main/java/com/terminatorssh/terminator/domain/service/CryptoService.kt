@@ -23,4 +23,8 @@ interface CryptoService {
     fun sha256(inputBase64: String): String
 
     fun generateRandomBytes(length: Int): ByteArray
+
+    fun generateAuthSalt() : ByteArray
+    fun generateKeySalt() : ByteArray
+    fun generateMasterKey() : ByteArray
 }

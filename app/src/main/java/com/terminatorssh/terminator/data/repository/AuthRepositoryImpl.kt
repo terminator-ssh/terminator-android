@@ -6,6 +6,7 @@ import com.terminatorssh.terminator.data.local.model.UserEntity
 import com.terminatorssh.terminator.data.remote.RetrofitClientFactory
 import com.terminatorssh.terminator.data.remote.dto.LoginRequest
 import com.terminatorssh.terminator.data.remote.dto.PreflightRequest
+import com.terminatorssh.terminator.data.remote.dto.RegisterRequest
 import com.terminatorssh.terminator.domain.common.Base64Helper.encodeBase64
 import com.terminatorssh.terminator.domain.model.UserSession
 import com.terminatorssh.terminator.domain.repository.AuthRepository
@@ -90,6 +91,76 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun registerAndSync(
+        url: String,
+        username: String,
+        password: String
+    ): Result<UserSession> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val keySalt = cryptoService.generateKeySalt()
+                val authSalt = cryptoService.generateAuthSalt()
+                val masterKey = cryptoService.generateMasterKey()
+
+                val keySaltBase64 = encodeBase64(keySalt)
+                val authSaltBase64 = encodeBase64(authSalt)
+
+                val kek = cryptoService.deriveKEK(password, keySaltBase64)
+
+                val loginKeyBytes = cryptoService.deriveKEK(password, authSaltBase64)
+                val loginKeyBase64 = encodeBase64(loginKeyBytes)
+
+                val loginHash = cryptoService.sha256(loginKeyBase64)
+
+                val encryptedData = cryptoService.encryptAES(masterKey, kek)
+                val packedMasterKey = cryptoService.packBlob(encryptedData)
+
+                val api = clientFactory.create(url)
+
+                val registerResponse = api.register(
+                    RegisterRequest(
+                        username = username,
+                        authSalt = authSaltBase64,
+                        keySalt = keySaltBase64,
+                        encryptedMasterKey = packedMasterKey,
+                        loginKey = loginKeyBase64
+                    )
+                )
+
+                val userId = UUID.randomUUID().toString()
+
+                val userEntity = UserEntity(
+                    id = userId,
+                    username = username,
+                    key_salt = keySaltBase64,
+                    auth_salt = authSaltBase64,
+                    encrypted_master_key = packedMasterKey,
+                    login_hash = loginHash,
+                    server_url = url,
+                    last_sync_time = null
+                )
+
+                userDao.nukeTable()
+                blobDao.nukeTable()
+                userDao.insertUser(userEntity)
+
+                val session = UserSession(
+                    userId = userId,
+                    username = username,
+                    masterKey = masterKey,
+                    token = registerResponse.accessToken
+                )
+
+                currentSession = session
+                Result.success(session)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Result.failure(e)
+            }
+        }
+    }
+
     override suspend fun unlockVault(password: String): Result<UserSession> {
         return withContext(Dispatchers.IO) {
             try {
@@ -150,9 +221,9 @@ class AuthRepositoryImpl(
     override suspend fun createLocalUser(username: String, password: String): Result<UserSession> {
         return withContext(Dispatchers.IO) {
             try {
-                val keySalt = cryptoService.generateRandomBytes(16)
-                val authSalt = cryptoService.generateRandomBytes(16)
-                val masterKey = cryptoService.generateRandomBytes(32)
+                val keySalt = cryptoService.generateKeySalt()
+                val authSalt = cryptoService.generateAuthSalt()
+                val masterKey = cryptoService.generateMasterKey()
 
                 val keySaltB64 = encodeBase64(keySalt)
                 val authSaltB64 = encodeBase64(authSalt)

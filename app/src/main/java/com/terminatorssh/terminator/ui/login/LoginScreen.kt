@@ -39,7 +39,10 @@ fun LoginScreen(
         },
         onCreateLocalClick = { user, pass ->
             viewModel.createLocal(user, pass)
-        }
+        },
+        onRegisterClick = { url, user, pass ->
+            viewModel.register(url, user, pass)
+        },
     )
 }
 
@@ -47,9 +50,11 @@ fun LoginScreen(
 fun LoginContent(
     state: LoginState,
     onLoginClick: (String, String, String) -> Unit,
+    onRegisterClick: (String, String, String) -> Unit,
     onCreateLocalClick: (String, String) -> Unit
 ) {
     var isLocalMode by remember { mutableStateOf(false) }
+    var isRegisterMode by remember { mutableStateOf(false) }
 
     // defaults
     var serverUrl by remember { mutableStateOf("http://192.168.100.10:5000/api/v1") }
@@ -156,17 +161,34 @@ fun LoginContent(
             if (state is LoginState.Loading) {
                 CircularProgressIndicator()
             } else {
+                val buttonText = when {
+                    isLocalMode -> "Create Local Vault"
+                    isRegisterMode -> "Sign Up"
+                    else -> "Connect & Restore"
+                }
+
                 Button(
                     onClick = {
-                        if (isLocalMode)
-                            onCreateLocalClick(username, password)
-                        else
-                            onLoginClick(serverUrl, username, password)
+                        when {
+                            isLocalMode -> onCreateLocalClick(username, password)
+                            isRegisterMode -> onRegisterClick(serverUrl, username, password)
+                            else -> onLoginClick(serverUrl, username, password)
+                        }
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {
-                    Text(text = if (isLocalMode) "Create Local Vault"
-                                else "Connect & Sync")
+                    Text(buttonText)
+                }
+            }
+
+            if (!isLocalMode && state !is LoginState.Loading) {
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = { isRegisterMode = !isRegisterMode }) {
+                    Text(
+                        text = if (isRegisterMode) "Already have an account? Login"
+                               else "Need an account? Register",
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         }
@@ -180,7 +202,8 @@ fun LoginScreenPreview() {
         LoginContent(
             state = LoginState.Idle,
             onLoginClick = { _, _, _ -> },
-            onCreateLocalClick = { _, _ -> }
+            onCreateLocalClick = { _, _ -> },
+            onRegisterClick = { _, _, _ -> }
         )
     }
 }
@@ -192,7 +215,8 @@ fun LoginErrorPreview() {
         LoginContent(
             state = LoginState.Error("Invalid credentials"),
             onLoginClick = { _, _, _ -> },
-            onCreateLocalClick = { _, _ -> }
+            onCreateLocalClick = { _, _ -> },
+            onRegisterClick = { _, _, _ -> }
         )
     }
 }
