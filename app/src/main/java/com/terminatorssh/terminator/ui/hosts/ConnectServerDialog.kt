@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ConnectServerDialog(onDismiss: () -> Unit, onConnect: (String, String) -> Unit) {
-    var url by remember { mutableStateOf("http://192.168.100.10:5000/api/v1") }
+    var url by remember { mutableStateOf("https://terminator.deeplerg.dev/api/v1") }
     var password by remember { mutableStateOf("") }
 
     AlertDialog(

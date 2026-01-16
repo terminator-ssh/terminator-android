@@ -43,7 +43,7 @@ fun LoginContent(
     var isRegisterMode by remember { mutableStateOf(false) }
 
     // defaults
-    var serverUrl by remember { mutableStateOf("http://192.168.100.10:5000/api/v1") }
+    var serverUrl by remember { mutableStateOf("https://terminator.deeplerg.dev/api/v1") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
