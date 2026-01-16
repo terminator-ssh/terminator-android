@@ -9,7 +9,8 @@ import org.koin.dsl.module
 val appModule = module {
     includes(
         networkModule,
-        databaseModule
+        databaseModule,
+        viewModelModule
     )
 
     single<CryptoService> { ArgonCryptoService() }
