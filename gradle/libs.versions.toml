@@ -18,6 +18,7 @@ retrofit = "3.0.0"
 room = "2.8.4"
 serialization-json = "1.9.0"
 serialization = "2.3.0"
+identityJvm = "202411.1"
 
 [libraries]
 android-terminal-emulator = { module = "com.github.jackpal:Android-Terminal-Emulator", version.ref = "androidTerminalEmulator" }
@@ -47,6 +48,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization-json" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+identity-jvm = { group = "com.android.identity", name = "identity-jvm", version.ref = "identityJvm" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

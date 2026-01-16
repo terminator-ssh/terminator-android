@@ -18,5 +18,7 @@ interface CryptoService {
     fun unpackBlob(
         packedBlobBase64: String): EncryptedData
 
+    fun packBlob(blob: EncryptedData) : String
+
     fun sha256(inputBase64: String): String
 }

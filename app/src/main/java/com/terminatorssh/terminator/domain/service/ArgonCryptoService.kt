@@ -91,6 +91,15 @@ class ArgonCryptoService : CryptoService {
         )
     }
 
+    override fun packBlob(blob: EncryptedData): String {
+        val ivBytes = decodeBase64(blob.iv)
+        val cipherBytes = decodeBase64(blob.cipherText)
+        val tagBytes = decodeBase64(blob.tag)
+
+        val combined = ivBytes + cipherBytes + tagBytes
+        return encodeBase64(combined)
+    }
+
     override fun sha256(inputBase64: String): String {
         val bytes = decodeBase64(inputBase64)
         val digest = MessageDigest.getInstance("SHA-256")

@@ -24,12 +24,15 @@ import androidx.compose.runtime.getValue
 import com.terminatorssh.terminator.domain.model.Host
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +45,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HostsScreen(
     onHostClick: (Host) -> Unit,
+    onHostAddClick: () -> Unit,
+    onHostEditClick: (Host) -> Unit,
     viewModel: HostsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -51,11 +56,16 @@ fun HostsScreen(
             TopAppBar(
                 title = { Text("Hosts") },
                 actions = {
-                    IconButton(onClick = { viewModel.loadHosts() }) {
+                    IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onHostAddClick() }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Host")
+            }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -70,7 +80,10 @@ fun HostsScreen(
                 is HostsState.Success -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(s.hosts) { host ->
-                            HostItem(host, onClick = { onHostClick(host) })
+                            HostItem(
+                                host,
+                                onClick = { onHostClick(host) },
+                                onEditClick = { onHostEditClick(host) })
                         }
                     }
                 }
@@ -80,7 +93,10 @@ fun HostsScreen(
 }
 
 @Composable
-fun HostItem(host: Host, onClick: () -> Unit) {
+fun HostItem(
+    host: Host,
+    onClick: () -> Unit,
+    onEditClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -89,7 +105,9 @@ fun HostItem(host: Host, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // icon
@@ -98,7 +116,8 @@ fun HostItem(host: Host, onClick: () -> Unit) {
                     .size(48.dp)
                     .background(
                         MaterialTheme.colorScheme.primaryContainer,
-                        shape = MaterialTheme.shapes.medium),
+                        shape = MaterialTheme.shapes.medium
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -113,7 +132,7 @@ fun HostItem(host: Host, onClick: () -> Unit) {
             // text
             Column {
                 Text(
-                    text = host.name,
+                    text = host.name.ifEmpty { host.host },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -121,6 +140,23 @@ fun HostItem(host: Host, onClick: () -> Unit) {
                     text = "${host.username}@${host.host}:${host.port}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            IconButton(
+                onClick = { onEditClick() },
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.medium
+                    )
+                ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -138,6 +174,6 @@ fun HostItemPreview() {
         username = "root"
     )
     MaterialTheme {
-        HostItem(host = dummyHost, onClick = {})
+        HostItem(host = dummyHost, onClick = {}, onEditClick = {})
     }
 }
