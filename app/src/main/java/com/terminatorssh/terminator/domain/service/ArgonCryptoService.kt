@@ -91,10 +91,34 @@ class ArgonCryptoService : CryptoService {
         )
     }
 
+    override fun packBlob(blob: EncryptedData): String {
+        val ivBytes = decodeBase64(blob.iv)
+        val cipherBytes = decodeBase64(blob.cipherText)
+        val tagBytes = decodeBase64(blob.tag)
+
+        val combined = ivBytes + cipherBytes + tagBytes
+        return encodeBase64(combined)
+    }
+
     override fun sha256(inputBase64: String): String {
         val bytes = decodeBase64(inputBase64)
         val digest = MessageDigest.getInstance("SHA-256")
         val hash = digest.digest(bytes)
         return hash.joinToString("") { "%02x".format(it) }
     }
+
+    override fun generateRandomBytes(length: Int): ByteArray {
+        val bytes = ByteArray(length)
+        SecureRandom().nextBytes(bytes)
+        return bytes
+    }
+
+    override fun generateAuthSalt(): ByteArray
+        = generateRandomBytes(CryptoConstants.AUTH_SALT_LENGTH)
+
+    override fun generateKeySalt(): ByteArray
+        = generateRandomBytes(CryptoConstants.KEY_SALT_LENGTH)
+
+    override fun generateMasterKey(): ByteArray
+        = generateRandomBytes(CryptoConstants.MASTER_KEY_LENGTH)
 }

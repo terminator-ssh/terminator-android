@@ -8,4 +8,7 @@ object CryptoConstants {
     const val MEMORY_COST = 131072
     const val PARALLELISM = 4
     const val HASH_LENGTH = 32
+    const val KEY_SALT_LENGTH = 32
+    const val AUTH_SALT_LENGTH = 32
+    const val MASTER_KEY_LENGTH = 32
 }

@@ -2,10 +2,9 @@ package com.terminatorssh.terminator.domain.repository
 
 import com.terminatorssh.terminator.domain.model.UserSession
 
-interface AuthRepository {
+interface SessionRepository {
+    suspend fun hasUser(): Boolean
     suspend fun getCurrentSession(): UserSession?
-
-    suspend fun loginAndSync(url: String, username: String, password: String): Result<UserSession>
-
+    fun setCurrentSession(session: UserSession)
     suspend fun logout()
 }
