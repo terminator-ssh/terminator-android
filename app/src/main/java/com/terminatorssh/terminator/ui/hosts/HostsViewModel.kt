@@ -86,7 +86,7 @@ class HostsViewModel(
 
         val results = awaitAll(syncJob, animationJob)
 
-        val syncResult = results[0] as Result<Unit>
+        val syncResult = results[0] as Result<*>
 
         syncResult
             .onSuccess {

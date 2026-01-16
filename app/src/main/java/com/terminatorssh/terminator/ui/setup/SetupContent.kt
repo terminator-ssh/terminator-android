@@ -1,54 +1,41 @@
-package com.terminatorssh.terminator.ui.login
+package com.terminatorssh.terminator.ui.setup
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.koin.androidx.compose.koinViewModel
-
-@Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    viewModel: LoginViewModel = koinViewModel()
-) {
-    val state by viewModel.state.collectAsState()
-
-    // nav
-    LaunchedEffect(state) {
-        if (state is LoginState.Success) {
-            onLoginSuccess()
-            viewModel.resetState()
-        }
-    }
-
-    LoginContent(
-        state = state,
-        onLoginClick = { url, user, pass ->
-            viewModel.login(url, user, pass)
-        },
-        onCreateLocalClick = { user, pass ->
-            viewModel.createLocal(user, pass)
-        },
-        onRegisterClick = { url, user, pass ->
-            viewModel.register(url, user, pass)
-        },
-    )
-}
 
 @Composable
 fun LoginContent(
-    state: LoginState,
+    state: SetupState,
     onLoginClick: (String, String, String) -> Unit,
     onRegisterClick: (String, String, String) -> Unit,
     onCreateLocalClick: (String, String) -> Unit
@@ -149,7 +136,7 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (state is LoginState.Error) {
+            if (state is SetupState.Error) {
                 Text(
                     text = state.message,
                     color = Color.Red,
@@ -158,7 +145,7 @@ fun LoginContent(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (state is LoginState.Loading) {
+            if (state is SetupState.Loading) {
                 CircularProgressIndicator()
             } else {
                 val buttonText = when {
@@ -181,42 +168,16 @@ fun LoginContent(
                 }
             }
 
-            if (!isLocalMode && state !is LoginState.Loading) {
+            if (!isLocalMode && state !is SetupState.Loading) {
                 Spacer(modifier = Modifier.height(16.dp))
                 TextButton(onClick = { isRegisterMode = !isRegisterMode }) {
                     Text(
                         text = if (isRegisterMode) "Already have an account? Login"
-                               else "Need an account? Register",
+                        else "Need an account? Register",
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    MaterialTheme {
-        LoginContent(
-            state = LoginState.Idle,
-            onLoginClick = { _, _, _ -> },
-            onCreateLocalClick = { _, _ -> },
-            onRegisterClick = { _, _, _ -> }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginErrorPreview() {
-    MaterialTheme {
-        LoginContent(
-            state = LoginState.Error("Invalid credentials"),
-            onLoginClick = { _, _, _ -> },
-            onCreateLocalClick = { _, _ -> },
-            onRegisterClick = { _, _, _ -> }
-        )
     }
 }

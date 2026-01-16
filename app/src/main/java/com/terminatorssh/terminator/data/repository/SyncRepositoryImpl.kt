@@ -4,10 +4,11 @@ import com.terminatorssh.terminator.data.local.dao.BlobDao
 import com.terminatorssh.terminator.data.local.dao.UserDao
 import com.terminatorssh.terminator.data.local.model.BlobEntity
 import com.terminatorssh.terminator.data.local.model.UserEntity
+import com.terminatorssh.terminator.data.mapper.SyncMapper
 import com.terminatorssh.terminator.data.remote.RetrofitClientFactory
 import com.terminatorssh.terminator.data.remote.dto.EncryptedBlobDto
 import com.terminatorssh.terminator.data.remote.dto.SyncRequest
-import com.terminatorssh.terminator.domain.repository.AuthRepository
+import com.terminatorssh.terminator.domain.repository.SessionRepository
 import com.terminatorssh.terminator.domain.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,10 +16,11 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SyncRepositoryImpl(
-    private val authRepository: AuthRepository,
+    private val sessionRepository: SessionRepository,
     private val userDao: UserDao,
     private val blobDao: BlobDao,
-    private val clientFactory: RetrofitClientFactory
+    private val clientFactory: RetrofitClientFactory,
+    private val syncMapper: SyncMapper
 ) : SyncRepository {
 
     private val _isSyncing = AtomicBoolean(false)
@@ -29,7 +31,7 @@ class SyncRepositoryImpl(
         try {
             _isSyncing.set(true)
 
-            val session = authRepository.getCurrentSession()
+            val session = sessionRepository.getCurrentSession()
                 ?: return@withContext Result.failure(
                     IllegalStateException("Not logged in"))
 
@@ -44,14 +46,7 @@ class SyncRepositoryImpl(
 
             val changedBlobs = blobDao.getBlobsModifiedSince(lastSyncTime)
 
-            val pushPayload = changedBlobs.map { entity ->
-                EncryptedBlobDto(
-                    id = entity.id,
-                    blob = entity.blob,
-                    iv = entity.iv,
-                    updatedAt = entity.updated_at,
-                    isDeleted = entity.is_deleted
-                )
+            val pushPayload = changedBlobs.map { syncMapper.toDto(it)
             }
 
             val api = clientFactory.create(server_url)
@@ -67,15 +62,7 @@ class SyncRepositoryImpl(
             )
 
             if (response.blobs.isNotEmpty()) {
-                val incomingEntities = response.blobs.map { dto ->
-                    BlobEntity(
-                        id = dto.id,
-                        blob = dto.blob,
-                        iv = dto.iv,
-                        updated_at = dto.updatedAt,
-                        is_deleted = dto.isDeleted
-                    )
-                }
+                val incomingEntities = response.blobs.map { syncMapper.toEntity(it) }
                 blobDao.insertBlobs(incomingEntities)
             }
 

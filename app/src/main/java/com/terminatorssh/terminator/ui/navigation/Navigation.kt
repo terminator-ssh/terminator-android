@@ -9,7 +9,7 @@ import androidx.navigation.toRoute
 import com.terminatorssh.terminator.ui.hosts.HostsScreen
 import com.terminatorssh.terminator.ui.hosts.form.HostFormAction
 import com.terminatorssh.terminator.ui.hosts.form.HostFormScreen
-import com.terminatorssh.terminator.ui.login.LoginScreen
+import com.terminatorssh.terminator.ui.setup.LoginScreen
 import com.terminatorssh.terminator.ui.terminal.TerminalScreen
 import com.terminatorssh.terminator.ui.theme.TerminatorTheme
 import com.terminatorssh.terminator.ui.welcome.WelcomeScreen

@@ -2,15 +2,17 @@ package com.terminatorssh.terminator.ui.welcome
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.terminatorssh.terminator.domain.repository.AuthRepository
+import com.terminatorssh.terminator.data.usecase.UnlockVaultUseCase
+import com.terminatorssh.terminator.domain.repository.SessionRepository
 import com.terminatorssh.terminator.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class WelcomeViewModel(
-    private val authRepository: AuthRepository,
-    private val syncRepository: SyncRepository
+    private val sessionRepository: SessionRepository,
+    private val syncRepository: SyncRepository,
+    private val unlockVaultUseCase: UnlockVaultUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<WelcomeState>(WelcomeState.Loading)
@@ -25,7 +27,7 @@ class WelcomeViewModel(
 
     private fun checkUser() {
         viewModelScope.launch {
-            if (authRepository.doesUserExist()) {
+            if (sessionRepository.hasUser()) {
                 _state.value = WelcomeState.HasUser
             } else {
                 _state.value = WelcomeState.NoUser
@@ -37,7 +39,7 @@ class WelcomeViewModel(
         viewModelScope.launch {
             _unlockError.value = null
 
-            val result = authRepository.unlockVault(password)
+            val result = unlockVaultUseCase(password)
 
             result.onSuccess {
                 launch { syncRepository.sync() }
@@ -50,7 +52,7 @@ class WelcomeViewModel(
 
     fun wipeData() {
         viewModelScope.launch {
-            authRepository.logout()
+            sessionRepository.logout()
             _state.value = WelcomeState.NoUser
         }
     }
