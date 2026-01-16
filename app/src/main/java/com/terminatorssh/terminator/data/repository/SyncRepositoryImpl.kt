@@ -3,11 +3,9 @@ package com.terminatorssh.terminator.data.repository
 import android.util.Log
 import com.terminatorssh.terminator.data.local.dao.BlobDao
 import com.terminatorssh.terminator.data.local.dao.UserDao
-import com.terminatorssh.terminator.data.local.model.BlobEntity
 import com.terminatorssh.terminator.data.local.model.UserEntity
 import com.terminatorssh.terminator.data.mapper.SyncMapper
 import com.terminatorssh.terminator.data.remote.RetrofitClientFactory
-import com.terminatorssh.terminator.data.remote.dto.EncryptedBlobDto
 import com.terminatorssh.terminator.data.remote.dto.SyncRequest
 import com.terminatorssh.terminator.domain.repository.SessionRepository
 import com.terminatorssh.terminator.domain.repository.SyncRepository
@@ -82,7 +80,7 @@ class SyncRepositoryImpl(
 
             updateUserLastSyncTime(user, response.syncTime)
 
-            Log.d("SYNC", "Sync Complete. New Watermark: ${response.syncTime}")
+            Log.d("SYNC", "Sync Complete. New sync time: ${response.syncTime}")
 
             _isSyncing.set(false)
             Result.success(Unit)
@@ -96,7 +94,16 @@ class SyncRepositoryImpl(
     }
 
     private suspend fun updateUserLastSyncTime(user: UserEntity, newTime: String) {
-        val updatedUser = user.copy(last_sync_time = newTime)
+        val serverTime = try {
+            Instant.parse(newTime)
+        } catch (e: Exception) {
+            Instant.now()
+        }
+
+        // clock skew VERY IMPORTANT
+        val safeTime = serverTime.minus(10, ChronoUnit.MINUTES)
+
+        val updatedUser = user.copy(last_sync_time = safeTime.toString())
         userDao.insertUser(updatedUser)
     }
 }
