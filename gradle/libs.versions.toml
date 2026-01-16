@@ -21,6 +21,8 @@ serialization = "2.3.0"
 
 [libraries]
 android-terminal-emulator = { module = "com.github.jackpal:Android-Terminal-Emulator", version.ref = "androidTerminalEmulator" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
