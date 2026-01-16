@@ -1,6 +1,5 @@
 package com.terminatorssh.terminator.data.repository
 
-import android.util.Base64
 import com.terminatorssh.terminator.data.local.dao.UserDao
 import com.terminatorssh.terminator.data.local.model.UserEntity
 import com.terminatorssh.terminator.data.remote.RetrofitClientFactory
@@ -26,7 +25,7 @@ class AuthRepositoryImpl(
         return currentSession
     }
 
-    override suspend fun loginAndSync(
+    override suspend fun login(
         url: String,
         username: String,
         password: String): Result<UserSession> {

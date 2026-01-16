@@ -8,6 +8,9 @@ interface BlobDao {
     @Query("SELECT * FROM encrypted_blobs WHERE is_deleted = 0")
     suspend fun getAllActiveBlobs(): List<BlobEntity>
 
+    @Query("SELECT * FROM encrypted_blobs WHERE updated_at > :sinceTimestamp")
+    suspend fun getBlobsModifiedSince(sinceTimestamp: String): List<BlobEntity>
+
     @Query("SELECT * FROM encrypted_blobs")
     suspend fun getAllBlobsIncludeDeleted(): List<BlobEntity>
 

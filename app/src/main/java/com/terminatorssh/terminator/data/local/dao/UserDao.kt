@@ -8,6 +8,8 @@ interface UserDao {
     @Query("SELECT * FROM users LIMIT 1")
     suspend fun getUser(): UserEntity?
 
+    // note: we intentionally use Replace here
+    // because we need to overwrite when we sync
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
 

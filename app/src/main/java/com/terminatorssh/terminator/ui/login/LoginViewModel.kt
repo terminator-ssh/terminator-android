@@ -3,11 +3,13 @@ package com.terminatorssh.terminator.ui.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.terminatorssh.terminator.domain.repository.AuthRepository
+import com.terminatorssh.terminator.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val syncRepository: SyncRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -22,12 +24,18 @@ class LoginViewModel(
         _state.value = LoginState.Loading
 
         viewModelScope.launch {
-            val result = authRepository.loginAndSync(url, username, pass)
+            val loginResult = authRepository.login(url, username, pass)
 
-            result.onSuccess {
+            loginResult.onFailure { error ->
+                _state.value = LoginState.Error(error.message ?: "Unknown login error")
+            }
+
+            val syncResult = syncRepository.sync()
+
+            syncResult.onSuccess {
                 _state.value = LoginState.Success
             }.onFailure { error ->
-                _state.value = LoginState.Error(error.message ?: "Unknown login error")
+                _state.value = LoginState.Error("Sync failed: ${error.message}")
             }
         }
     }
