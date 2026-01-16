@@ -106,4 +106,10 @@ class ArgonCryptoService : CryptoService {
         val hash = digest.digest(bytes)
         return hash.joinToString("") { "%02x".format(it) }
     }
+
+    override fun generateRandomBytes(length: Int): ByteArray {
+        val bytes = ByteArray(length)
+        SecureRandom().nextBytes(bytes)
+        return bytes
+    }
 }

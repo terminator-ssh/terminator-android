@@ -1,6 +1,12 @@
 package com.terminatorssh.terminator.ui.login
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +36,9 @@ fun LoginScreen(
         state = state,
         onLoginClick = { url, user, pass ->
             viewModel.login(url, user, pass)
+        },
+        onCreateLocalClick = { user, pass ->
+            viewModel.createLocal(user, pass)
         }
     )
 }
@@ -37,8 +46,11 @@ fun LoginScreen(
 @Composable
 fun LoginContent(
     state: LoginState,
-    onLoginClick: (String, String, String) -> Unit
+    onLoginClick: (String, String, String) -> Unit,
+    onCreateLocalClick: (String, String) -> Unit
 ) {
+    var isLocalMode by remember { mutableStateOf(false) }
+
     // defaults
     var serverUrl by remember { mutableStateOf("http://192.168.100.10:5000/api/v1") }
     var username by remember { mutableStateOf("") }
@@ -61,15 +73,55 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            OutlinedTextField(
-                value = serverUrl,
-                onValueChange = { serverUrl = it },
-                label = { Text("Server URL") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().height(40.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = { isLocalMode = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if(!isLocalMode) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Cloud,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cloud Restore")
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = { isLocalMode = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if(isLocalMode) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Shield,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Local Vault")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (!isLocalMode) {
+                OutlinedTextField(
+                    value = serverUrl,
+                    onValueChange = { serverUrl = it },
+                    label = { Text("Server URL") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             OutlinedTextField(
                 value = username,
@@ -105,10 +157,16 @@ fun LoginContent(
                 CircularProgressIndicator()
             } else {
                 Button(
-                    onClick = { onLoginClick(serverUrl, username, password) },
+                    onClick = {
+                        if (isLocalMode)
+                            onCreateLocalClick(username, password)
+                        else
+                            onLoginClick(serverUrl, username, password)
+                    },
                     modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {
-                    Text("Connect & Sync")
+                    Text(text = if (isLocalMode) "Create Local Vault"
+                                else "Connect & Sync")
                 }
             }
         }
@@ -121,7 +179,8 @@ fun LoginScreenPreview() {
     MaterialTheme {
         LoginContent(
             state = LoginState.Idle,
-            onLoginClick = { _, _, _ -> }
+            onLoginClick = { _, _, _ -> },
+            onCreateLocalClick = { _, _ -> }
         )
     }
 }
@@ -132,7 +191,8 @@ fun LoginErrorPreview() {
     MaterialTheme {
         LoginContent(
             state = LoginState.Error("Invalid credentials"),
-            onLoginClick = { _, _, _ -> }
+            onLoginClick = { _, _, _ -> },
+            onCreateLocalClick = { _, _ -> }
         )
     }
 }

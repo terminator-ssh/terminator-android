@@ -21,4 +21,6 @@ interface CryptoService {
     fun packBlob(blob: EncryptedData) : String
 
     fun sha256(inputBase64: String): String
+
+    fun generateRandomBytes(length: Int): ByteArray
 }

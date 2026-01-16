@@ -12,12 +12,13 @@ import com.terminatorssh.terminator.ui.hosts.form.HostFormScreen
 import com.terminatorssh.terminator.ui.login.LoginScreen
 import com.terminatorssh.terminator.ui.terminal.TerminalScreen
 import com.terminatorssh.terminator.ui.theme.TerminatorTheme
+import com.terminatorssh.terminator.ui.welcome.WelcomeScreen
 
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = LoginRoute) {
+    NavHost(navController = navController, startDestination = WelcomeRoute) {
 
         composable<LoginRoute> {
             LoginScreen(
@@ -63,6 +64,22 @@ fun Navigation() {
                 onNavigateBack = {
                     navController.popBackStack()
                 })
+        }
+
+        composable<WelcomeRoute> {
+            // inclusive = true means we clear history
+            WelcomeScreen(
+                onNavigateToConnect = {
+                    navController.navigate(LoginRoute) {
+                        popUpTo(WelcomeRoute) { inclusive = true }
+                    }
+                },
+                onUnlockSuccess = {
+                    navController.navigate(HostsRoute) {
+                        popUpTo(WelcomeRoute) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

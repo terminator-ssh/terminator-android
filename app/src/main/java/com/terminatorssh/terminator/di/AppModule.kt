@@ -24,6 +24,7 @@ val appModule = module {
     single<AuthRepository> {
         AuthRepositoryImpl(
             userDao = get(),
+            blobDao = get(),
             clientFactory = get(),
             cryptoService = get()
         )

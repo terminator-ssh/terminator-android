@@ -14,3 +14,6 @@ data class TerminalRoute(val hostId: String)
 
 @Serializable
 data class HostFormRoute(val hostId: String?)
+
+@Serializable
+object WelcomeRoute

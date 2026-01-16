@@ -37,9 +37,8 @@ class SyncRepositoryImpl(
                 ?: return@withContext Result.failure(
                     IllegalStateException("Local user state missing"))
 
-            val serverUrl = user.server_url
-                ?: return@withContext Result.failure(
-                    IllegalStateException("No server URL configured"))
+            val server_url = user.server_url
+                ?: return@withContext Result.success(Unit) //offline
 
             val lastSyncTime = user.last_sync_time ?: Instant.EPOCH.toString()
 
@@ -55,7 +54,7 @@ class SyncRepositoryImpl(
                 )
             }
 
-            val api = clientFactory.create(serverUrl)
+            val api = clientFactory.create(server_url)
             val authHeader = "Bearer ${session.token}"
 
             val response = api.sync(

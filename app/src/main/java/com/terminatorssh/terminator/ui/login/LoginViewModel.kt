@@ -40,6 +40,25 @@ class LoginViewModel(
         }
     }
 
+    fun createLocal(username: String, pass: String) {
+        if (username.isBlank() || pass.isBlank()) {
+            _state.value = LoginState.Error("Please fill all fields")
+            return
+        }
+
+        _state.value = LoginState.Loading
+
+        viewModelScope.launch {
+            val result = authRepository.createLocalUser(username, pass)
+
+            result.onSuccess {
+                _state.value = LoginState.Success
+            }.onFailure { error ->
+                _state.value = LoginState.Error("User creation failed: ${error.message}")
+            }
+        }
+    }
+
     fun resetState() {
         _state.value = LoginState.Idle
     }
