@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.terminatorssh.terminator.domain.common.SyncConstants
 
 @Composable
 fun LoginContent(
@@ -43,7 +44,7 @@ fun LoginContent(
     var isRegisterMode by remember { mutableStateOf(false) }
 
     // defaults
-    var serverUrl by remember { mutableStateOf("https://terminator.deeplerg.dev/api/v1") }
+    var serverUrl by remember { mutableStateOf(SyncConstants.DEFAULT_API_URL) }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
