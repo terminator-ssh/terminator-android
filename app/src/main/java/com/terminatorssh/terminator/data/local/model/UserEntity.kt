@@ -11,5 +11,5 @@ data class UserEntity(
     val encrypted_master_key: String,
     val login_hash: String,
     val server_url: String?,
-    val last_sync_time: String? // null = need initial sync
+    val last_sync_time: String?
 )
