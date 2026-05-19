@@ -17,10 +17,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.terminatorssh.terminator.domain.common.SyncConstants
 
 @Composable
 fun ConnectServerDialog(onDismiss: () -> Unit, onConnect: (String, String) -> Unit) {
-    var url by remember { mutableStateOf("https://terminator.deeplerg.dev/api/v1") }
+    var url by remember { mutableStateOf(SyncConstants.DEFAULT_API_URL) }
     var password by remember { mutableStateOf("") }
 
     AlertDialog(

@@ -3,7 +3,6 @@ package com.terminatorssh.terminator.data.remote.dto
 data class EncryptedBlobDto(
     val id: String,
     val blob: String,
-    val iv: String,
     val updatedAt: String,
     val isDeleted: Boolean
 )

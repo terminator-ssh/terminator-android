@@ -9,7 +9,6 @@ class SyncMapper {
         return EncryptedBlobDto(
             id = entity.id,
             blob = entity.blob,
-            iv = entity.iv,
             updatedAt = entity.updated_at,
             isDeleted = entity.is_deleted
         )
@@ -19,7 +18,6 @@ class SyncMapper {
         return BlobEntity(
             id = dto.id,
             blob = dto.blob,
-            iv = dto.iv,
             updated_at = dto.updatedAt,
             is_deleted = dto.isDeleted
         )

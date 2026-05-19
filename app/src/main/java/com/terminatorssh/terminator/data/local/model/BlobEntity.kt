@@ -6,7 +6,6 @@ import androidx.room.*
 data class BlobEntity(
     @PrimaryKey val id: String,
     val blob: String,
-    val iv: String,
     val updated_at: String,
     val is_deleted: Boolean
 )

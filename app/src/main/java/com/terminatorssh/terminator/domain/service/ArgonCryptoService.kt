@@ -72,17 +72,25 @@ class ArgonCryptoService : CryptoService {
     override fun unpackBlob(packedBlobBase64: String): EncryptedData {
         val packedBytes = decodeBase64(packedBlobBase64)
 
-        // IV (12) + Ciphertext (N) + Tag (16)
+        // Version (1) + IV (12) + Ciphertext (N) + Tag (16)
         val ivLength = CryptoConstants.GCM_IV_LENGTH
         val tagLength = CryptoConstants.GCM_TAG_LENGTH / 8
 
-        if (packedBytes.size < ivLength + tagLength) {
+        if (packedBytes.isEmpty()) {
+            throw IllegalArgumentException("Blob is empty")
+        }
+        if (packedBytes[0] != 0x01.toByte()) { // TODO
+            throw IllegalArgumentException("Unsupported crypto version")
+        }
+        val cryptoPayload = packedBytes.copyOfRange(1, packedBytes.size)
+
+        if (cryptoPayload.size < ivLength + tagLength) {
             throw IllegalArgumentException("Blob is too short")
         }
 
-        val iv = packedBytes.copyOfRange(0, ivLength)
-        val tag = packedBytes.copyOfRange(packedBytes.size - tagLength, packedBytes.size)
-        val cipherText = packedBytes.copyOfRange(ivLength, packedBytes.size - tagLength)
+        val iv = cryptoPayload.copyOfRange(0, ivLength)
+        val tag = cryptoPayload.copyOfRange(cryptoPayload.size - tagLength, cryptoPayload.size)
+        val cipherText = cryptoPayload.copyOfRange(ivLength, cryptoPayload.size - tagLength)
 
         return EncryptedData(
             cipherText = encodeBase64(cipherText),
@@ -92,11 +100,12 @@ class ArgonCryptoService : CryptoService {
     }
 
     override fun packBlob(blob: EncryptedData): String {
+        val versionByte = byteArrayOf(0x01)
         val ivBytes = decodeBase64(blob.iv)
         val cipherBytes = decodeBase64(blob.cipherText)
         val tagBytes = decodeBase64(blob.tag)
 
-        val combined = ivBytes + cipherBytes + tagBytes
+        val combined = versionByte + ivBytes + cipherBytes + tagBytes
         return encodeBase64(combined)
     }
 

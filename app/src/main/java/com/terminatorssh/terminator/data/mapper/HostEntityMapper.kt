@@ -1,6 +1,7 @@
 package com.terminatorssh.terminator.data.mapper
 
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.terminatorssh.terminator.data.local.model.BlobEntity
 import com.terminatorssh.terminator.domain.model.Host
 import com.terminatorssh.terminator.domain.service.CryptoService
@@ -17,6 +18,12 @@ class HostDataMapper(
             val encryptedData = cryptoService.unpackBlob(entity.blob)
             val jsonBytes = cryptoService.decryptAES(encryptedData, masterKey)
             val jsonString = String(jsonBytes, Charsets.UTF_8)
+
+            // TODO this is very dirty, need to handle this properly
+            val jsonObject = JsonParser.parseString(jsonString).asJsonObject
+            if (jsonObject.has("type") && jsonObject.get("type").asString != "host") {
+                return null
+            }
 
             val host = gson.fromJson(jsonString, Host::class.java)
             host.copy(id = entity.id)
@@ -38,7 +45,6 @@ class HostDataMapper(
         return BlobEntity(
             id = host.id,
             blob = packedBlob,
-            iv = encryptedData.iv,
             updated_at = now,
             is_deleted = false
         )
